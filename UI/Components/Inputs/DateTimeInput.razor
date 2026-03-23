@@ -1,0 +1,57 @@
+﻿@inherits InputMain<System.DateTime?>
+
+<InputContainer Ref=@this TRef=@DateTimeInput TValue=@(System.DateTime?)>
+    <div class="date-input__wrapper">
+        <div class="input-wrapper">
+            <span class="helper-icon @(!System.String.IsNullOrEmpty(WarningMessage) ? "warning" : "")">
+                @if (!System.String.IsNullOrEmpty(prpErrorMessage))
+                {
+                    <ErrorIcon />
+                }
+                else if (!System.String.IsNullOrEmpty(WarningMessage))
+                {
+                    <InfoIcon />
+                }
+            </span>
+            <input type="datetime-local" id=@Id name=@Id placeholder=@Placeholder 
+                required=@Required disabled=@prpIsDisabled class=@($"date-input {(!System.String.IsNullOrEmpty(ErrorMessage) ? "error" : "")}") @bind=@mobjCurrentValue />
+        </div>
+    </div>
+</InputContainer>
+
+@code {
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            subRegisterFormField();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && System.String.IsNullOrEmpty(mobjCurrentValue.ToString()))
+        {
+            throw new System.Exception("Field is required");
+        }
+        else
+        if (mobjCurrentValue > System.DateTime.MaxValue)
+        {
+            throw new System.Exception($"Date is too large");
+        }
+        else if (mobjCurrentValue < new System.DateTime(1900, 1, 1))
+        {
+            throw new System.Exception($"Date cannot be before 01/01/1900");
+        }
+    }
+    #endregion
+}
+
+

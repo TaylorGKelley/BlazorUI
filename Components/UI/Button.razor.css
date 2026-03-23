@@ -1,8 +1,0 @@
-﻿.btn {
-    padding: 0.8rem 1.25rem;
-    border: none;
-    background-color: var(--clr-mono-100);
-    color: var(--clr-mono-950);
-    border-radius: 9999px;
-    cursor: pointer;
-}

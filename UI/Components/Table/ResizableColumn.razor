@@ -1,0 +1,118 @@
+﻿@inherits cBindingValue<System.Int32?>
+
+<div @ref=@fobjColumn class="resize-container">
+    @* <div style="overflow-x: hidden; white-space: nowrap; text-overflow: ellipsis"> *@
+        @ChildContent
+    @* </div> *@
+    <div @ref=fobjColumnResizeHandle class="resize-handle">
+    </div>
+</div>
+
+<style>
+    body.column-dragging {
+        cursor: col-resize;
+    }
+
+    .resize-container {
+        position: relative;
+        display: flex; 
+        gap: 3px; 
+        justify-content: space-between;
+    }
+
+    .resize-handle {
+        position: absolute;
+        cursor: col-resize;  
+        width: 10px; 
+        height: 100%;
+        right: -5px;
+        display: flex;
+        justify-content: center;
+        /* z-index: 1; */
+    }
+    .resize-handle::after {
+        content: '';
+        width: 2px;
+        height: 70%;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        border-radius: 9999px;
+        background-color: #777;
+        pointer-events: none;
+    }
+</style>
+
+@code {
+    #region Params
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
+    [Parameter] public System.Int32 MinWidth { get; set; } = 100;
+    #endregion
+
+    #region Class Declarations
+    private ElementReference? fobjColumnResizeHandle { get; set; } = null;
+    private ElementReference? fobjColumn { get; set; } = null;
+    #endregion
+
+    #region OnAfterRenderAsync
+    protected override async System.Threading.Tasks.Task OnAfterRenderAsync(System.Boolean firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                // IJSObjectReference objJSResizableColumn = await mobjJSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/Components/ResizableColumn/index.js");
+                // await objJSResizableColumn.InvokeVoidAsync("init", fobjColumn, fobjColumnResizeHandle, MinWidth, DotNetObjectReference.Create(this));
+
+                await mobjJSRuntime.InvokeVoidAsync("js", @"
+                    const resizeColumnRef = params[0];
+                    const resizeHandleRef = params[1];
+                    const minWidth = params[2];
+                    const DotNet = params[3];
+
+                    // Handle scrollbar drag
+                    let isDragging = false;
+                    let startX
+                    let initialWidth;
+
+                    resizeHandleRef.addEventListener('mousedown', (e) => {
+                        isDragging = true;
+                        startX = e.clientX;
+                        initialWidth = parseFloat(window.getComputedStyle(resizeColumnRef).getPropertyValue('width'));
+                        document.body.classList.add('no-select'); // Prevent text selection during drag
+                        document.body.classList.add('column-dragging');
+                    });
+
+                    document.addEventListener('mousemove', async (e) => {
+                        if (!isDragging) return;
+                        const deltaY = e.clientX - startX;
+                        const calculatedWidth = Math.round(deltaY + Math.round(initialWidth) > 50 ? deltaY + Math.round(initialWidth) : 50);
+
+                        resizeColumnRef.style.width = calculatedWidth < minWidth ? minWidth + 'px' : calculatedWidth + 'px';
+                        await DotNet.invokeMethodAsync('fncSetWidth', calculatedWidth < minWidth ? minWidth : calculatedWidth);
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                        isDragging = false;
+                        document.body.classList.remove('no-select');
+                        document.body.classList.remove('column-dragging');
+                        //const currentWidth = parseFloat(window.getComputedStyle(resizeColumnRef).getPropertyValue('width'));
+                    });", fobjColumn, fobjColumnResizeHandle, MinWidth, DotNetObjectReference.Create(this));
+            }
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region fncSetWidth
+    [JSInvokable("fncSetWidth")]
+    public void fncSetWidth(System.Int32 pintWidth)
+    {
+        mobjCurrentValue = pintWidth;
+        StateHasChanged();
+    }
+    #endregion
+}

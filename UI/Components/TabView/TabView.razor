@@ -1,0 +1,98 @@
+﻿@using BlazorUI.Utils.Class_Extensions
+@inherits ComponentMain
+
+<CascadingValue Name="TabViewContainer" Value=@this>
+    @ChildContent
+</CascadingValue>
+
+@code {
+    #region Params
+    /// <summary>
+    /// Include <Tab> elements to register the tabs within the tab view
+    /// </summary>
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    /// <summary>
+    /// Specify the ID of the tab to navigate too when initially loading
+    /// </summary>
+    [Parameter] public System.String NavigateOnLoad { get; set; }
+    /// <summary>
+    /// REQUIRED: Set OnFocusedTabChange=StateHasChanged so that the pages UI updates for focused link items
+    /// </summary>
+    [Parameter, EditorRequired] public EventCallback OnFocusedTabChange { get; set; }
+    #endregion
+
+    #region Props
+    public System.String mstrFocusedTab
+    {
+        get
+        {
+            return mstrFocusedTabValue;
+        }
+        set
+        {
+            mstrFocusedTabValue = value;
+            OnFocusedTabChange.InvokeAsync();
+        }
+    }
+    #endregion
+
+    #region Class Declarations
+    private System.String mstrFocusedTabValue;
+    private static System.String mstrQueryStringName = "tabId";
+    #endregion
+
+    #region Class Declarations
+    private System.Collections.Generic.List<System.String> malstrTabs =
+        new System.Collections.Generic.List<System.String>();
+    #endregion
+
+    #region OnAfterRender
+    protected override void OnAfterRender(System.Boolean firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                mobjNavigationManager.TryGetQueryParameterValue(mstrQueryStringName, out System.String? strValue);
+
+                fncNavigateTo(strValue ?? NavigateOnLoad ?? malstrTabs.First());
+            }
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRegisterTab
+    internal void subRegisterTab(System.String pstrTabId, System.Boolean pblnIsDefaultTab = false)
+    {
+        malstrTabs.Add(pstrTabId);
+    }
+    #endregion
+
+    #region fncNavigateTo
+    public void fncNavigateTo(System.String pstrTabId)
+    {
+        try
+        {
+            if (malstrTabs.Contains(pstrTabId))
+            {
+                mobjNavigationManager.AddOrUpdateQueryParameter(mstrQueryStringName, pstrTabId);
+                mstrFocusedTab = pstrTabId;
+
+                StateHasChanged();
+            }
+            else
+            {
+                throw new System.Exception($"Tab with an id of {pstrTabId} was not found");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+}

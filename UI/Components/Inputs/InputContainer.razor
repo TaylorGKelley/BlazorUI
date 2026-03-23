@@ -1,0 +1,118 @@
+﻿@typeparam TValue
+@typeparam TRef where TRef : InputMain<TValue>
+
+    <style>
+    .input-container > label > span {
+        margin-left: 4px;
+    }
+
+        .input-container > label > span[optional] {
+            color: #777;
+            font-size: 0.75rem;
+        }
+
+        .input-container > label > span[required] {
+            color: var(--clr-required);
+        }
+
+    .input-container {
+        --clr-input-outline: #333;
+        --clr-error: #FF393B;
+        --clr-warning: #E9D502;
+        --clr-required: red;
+        position: relative;
+        width: clamp(200px, 100%, 500px);
+        font-size: 0.9rem;
+    }
+
+        .input-container > label {
+            font-size: 0.9rem;
+            display: block;
+            margin-left: 3px;
+            margin-bottom: 3px;
+        }
+
+        .input-container input:not(.image-caption),
+        .input-container textarea {
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid #ccc;
+            width: clamp(200px, 100%, 500px);
+        }
+
+            .input-container input:not(.image-caption):focus,
+            .input-container textarea:focus {
+                outline: 2px auto var(--clr-input-outline);
+            }
+
+            .input-container input:not(.image-caption):invalid,
+            .input-container textarea:invalid {
+                /*            box-shadow: 0 0 10px var(--clr-error);*/
+            }
+
+    .input-error-message {
+        font-size: 13px;
+        height: 1rem;
+        line-height: 1rem;
+        margin-left: 3px;
+        color: var(--clr-error);
+    }
+
+        .input-error-message.warning {
+            color: var(--clr-warning);
+        }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .helper-icon > svg {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 0.8rem;
+        height: 1rem;
+        width: 1rem;
+        stroke: var(--clr-error) !important;
+    }
+
+    .helper-icon.warning > svg {
+        stroke: var(--clr-warning) !important;
+    }
+
+    .input-wrapper .helper-icon:has(svg) + input,
+    .input-wrapper .helper-icon:has(svg) + textarea {
+        padding-right: 2rem;
+    }
+
+    </style>
+
+<div class="input-container" style=@CSSVariables>
+    @if (!System.String.IsNullOrEmpty(Ref.Label) && !PreventDefaultLayout)
+    {
+        <label for="@Ref.Id">
+            @Ref.Label
+            @if (Ref.Required || Ref.Optional)
+            {
+                @(" ")
+                <span optional=@(Ref.Optional) required=@Ref.Required>@(Ref.Required ? "*" : "(optional)")</span>
+            }
+        </label>
+    }
+    <div class="input-wrapper">
+        @ChildContent
+    </div>
+    @if (!PreventDefaultLayout)
+    {
+        <p class="input-error-message @(!System.String.IsNullOrEmpty(Ref.WarningMessage) ? "warning" : "")">@(!System.String.IsNullOrEmpty(Ref.prpErrorMessage) ? Ref.prpErrorMessage : Ref.WarningMessage)</p>
+    }
+</div>
+
+@code {
+    #region Params
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+    [Parameter, EditorRequired] public TRef Ref { get; set; }
+    [Parameter] public System.String CSSVariables { get; set; } = System.String.Empty;
+    [Parameter] public System.Boolean PreventDefaultLayout { get; set; } = false;
+    #endregion
+}

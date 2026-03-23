@@ -1,0 +1,59 @@
+﻿@inherits InputMain<System.Int32?>
+
+<InputContainer Ref=@this TRef=@ZipCodeInput TValue=@(Nullable<System.Int32>)>
+    <div class="input-wrapper">
+        <span class="helper-icon @(!System.String.IsNullOrEmpty(WarningMessage) ? "warning" : "")">
+            @if (!System.String.IsNullOrEmpty(prpErrorMessage))
+            {
+                <ErrorIcon />
+            }
+            else if (!System.String.IsNullOrEmpty(WarningMessage))
+            {
+                <InfoIcon />
+            }
+        </span>
+        <input @attributes=@Attributes name=@Id id=@Id type="text" maxlength="5" disabled=@prpIsDisabled @bind=@mintCurrentValue required=@Required placeholder=@Placeholder />
+    </div>
+</InputContainer>
+
+@code {
+    #region Props
+    public System.Int32? mintCurrentValue { get => mobjCurrentValue == 0 ? null : mobjCurrentValue; set => mobjCurrentValue = value; }
+    #endregion
+
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            subRegisterFormField();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && System.String.IsNullOrEmpty(mobjCurrentValue?.ToString()))
+        {
+            throw new System.Exception("Field is required");
+        }
+        else if (mobjCurrentValue.ToString()?.Length > 5)
+        {
+            throw new System.Exception("Value is too long");
+        }
+        else if (mobjCurrentValue.ToString()?.Length < 5)
+        {
+            throw new System.Exception("Value is too short");
+        }
+        else if (!System.Text.RegularExpressions.Regex.IsMatch(mobjCurrentValue?.ToString() ?? "", @"^[0-9]{5}$"))
+        {
+            throw new System.Exception("Invalid Zip Code");
+        }
+    }
+    #endregion
+}

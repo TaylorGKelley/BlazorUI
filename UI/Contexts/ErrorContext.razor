@@ -1,0 +1,36 @@
+﻿@* 
+    All LifeCycle methods like OnInitilized and OnAfterRender should use tryCatch and subSetLastError(), 
+    However this error boundary should catch any other subFunctions that are called in the front end code like a @onclick event
+*@
+
+<ErrorBoundary @ref=objErrorBoundary Context="ex">
+    <ChildContent>
+        <CascadingValue Name="objErrorContext" Value="this">
+            @ChildContent
+        </CascadingValue>
+    </ChildContent>
+    <ErrorContent>
+        <CascadingValue Name="objErrorContext" Value="this">
+            @ChildContent
+
+            @{
+                // Add Toast
+            }
+        </CascadingValue>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    #region Class Declarations
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private ErrorBoundary? objErrorBoundary = null;
+    #endregion
+
+    #region subRecover
+    public void subRecover()
+    {
+        objErrorBoundary?.Recover();
+    }
+    #endregion
+}

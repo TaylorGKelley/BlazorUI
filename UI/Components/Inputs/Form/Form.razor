@@ -1,0 +1,117 @@
+﻿@inherits ComponentMain
+
+<CascadingValue Name="FormState" Value=@mobjFormState>
+    <form @attributes=@pdictAttributes @onsubmit=@subHandleSubmit @onsubmit:stopPropagation=@(true) @onsubmit:preventDefault=@(true) disabled=@mobjFormState.mblnIsDisabled>
+        @ChildContent
+    </form>
+</CascadingValue>
+
+@code {
+    #region Params
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// * Optional *
+    /// Function to run custom validation after the default field validation is ran.
+    /// Return true to continue submission and false to block the submission.
+    /// </summary>
+    [Parameter] public System.Func<System.Boolean> OnValidate { get; set; } = () => true;
+    /// <summary>
+    /// * Optional *
+    /// Function to run custom async validation after the default field validation is ran.
+    /// Return true to continue submission and false to block the submission.
+    /// </summary>
+    [Parameter] public System.Func<System.Threading.Tasks.Task<System.Boolean>> OnValidateAsync { get; set; } = async () => await System.Threading.Tasks.Task.Run(() => true);
+    /// <summary>
+    /// Required
+    /// Function to run when SubmitButton is pressed
+    /// </summary>
+    [Parameter, EditorRequired] public EventCallback OnSubmit { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public System.Collections.Generic.Dictionary<System.String, System.Object> pdictAttributes { get; set; }
+    #endregion
+
+    #region Class Declarations
+    public cFormState mobjFormState { get; set; }
+    #endregion
+
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            mobjFormState ??= new cFormState();
+
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subHandleSubmit
+    private async void subHandleSubmit(System.EventArgs pobjEvent)
+    {
+        try
+        {
+            mobjFormState.mblnIsDisabled = true;
+            StateHasChanged();
+
+            if (!fncValidateFields())
+            {
+                return;
+            }
+
+            // Invoke custom validation function
+            if (!OnValidate.Invoke()) {
+                return;
+            }
+
+            if (!(await OnValidateAsync.Invoke()))
+            {
+                return;
+            }
+
+            await OnSubmit.InvokeAsync();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+        finally
+        {
+            mobjFormState.mblnIsDisabled = false;
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region fncValidateFields
+    private System.Boolean fncValidateFields()
+    {
+        System.Boolean blnHasError = false;
+
+        foreach (System.Collections.Generic.KeyValuePair<System.String, Classes.cFormField> kvpFormField in mobjFormState.mdictFormFields)
+        {
+            if (kvpFormField.Value.mactRunValidation != null)
+            {
+                try
+                {
+                    mobjFormState.mdictFormFields[kvpFormField.Key].mstrErrorMessage = null;
+
+                    kvpFormField.Value.mactRunValidation(); // Throws error if validation fails
+                }
+                catch (System.Exception ex)
+                {
+                    mobjFormState.mdictFormFields[kvpFormField.Key].mstrErrorMessage = ex.Message;
+                    blnHasError = true;
+                }
+            }
+        }
+
+
+        return !blnHasError;
+    }
+    #endregion
+}

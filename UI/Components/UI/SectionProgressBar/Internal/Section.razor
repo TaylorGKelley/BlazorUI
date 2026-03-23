@@ -1,0 +1,20 @@
+﻿<div class="progress-container">
+    @if (!IsFirst)
+    {
+        <div class="progress-bar" data-progress=@($"{SectionData.mintProgressPercentage}%")></div>
+    }
+    <div class="check-mark" data-checked=@(SectionData.mintProgressPercentage == 100)>
+        <span>
+            @if (SectionData.mintProgressPercentage == 100)
+            {
+                <CheckIcon />
+            }
+        </span>
+        <p class="text-small text-center">@SectionData.mstrTitle</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Classes.cSectionProgress SectionData { get; set; }
+    [Parameter] public System.Boolean IsFirst { get; set; } = false;
+}

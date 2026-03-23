@@ -1,0 +1,12 @@
+﻿@inherits ComponentMain
+
+<button class="btn" type="Submit" disabled=@(Disabled ?? mobjFormState?.mblnIsDisabled ?? false)>
+    @ChildContent
+</button>
+
+@code {
+    [CascadingParameter(Name = "FormState")] public cFormState mobjFormState { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public System.Boolean? Disabled { get; set; } = null;
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<System.String, System.Object> Attributes { get; set; }
+}

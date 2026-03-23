@@ -1,8 +1,0 @@
-﻿<button @attributes=@Attributes class="btn shadow-sm">
-    @ChildContent
-</button>
-
-@code {
-    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; }
-    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<System.String, System.Object> Attributes { get; set; }
-}

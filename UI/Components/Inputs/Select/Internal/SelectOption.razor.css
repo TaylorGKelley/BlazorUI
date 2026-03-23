@@ -1,0 +1,62 @@
+﻿.select-option__label {
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 2rem;
+    background-color: transparent;
+    transition: background-color 0.1s var(--transition-ease-out);
+}
+
+li.compact-spacing .select-option__label {
+    padding-block: 0.4rem;
+}
+
+.select-option__label.multi {
+    display: grid;
+    grid-template-columns: 1rem 1fr;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.select-option__label.multi > svg {
+    width: auto;
+}
+
+    .select-option__label.multi > span {
+        width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+.select-option__input {
+    visibility: hidden;
+    position: absolute;
+}
+
+li {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+    li:hover {
+        background-color: var(--clr-mono-200);
+    }
+
+    li.checked {
+        background-color: var(--clr-mono-200);
+    }
+
+.checkmark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+    .checkmark > ::deep svg {
+        width: 1rem;
+        height: 1rem;
+    }

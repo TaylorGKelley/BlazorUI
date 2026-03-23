@@ -1,0 +1,255 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inherits InputMain<IBrowserFile?>
+@implements IAsyncDisposable
+
+<style>
+    .image-input__wrapper {
+        position: relative;
+    }
+
+    .image-input {
+        display: flex;
+        padding: 0.5rem 1rem;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 1rem;
+        transition: filter 150ms var(--transition-ease-out);
+    }
+
+        .image-input[data-state="dragover"] {
+            filter: brightness(0.95);
+        }
+
+    .image-input__display-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        width: clamp(250px, 100%, 400px);
+        aspect-ratio: 1 / 1;
+    }
+
+        .image-input__display-container > * {
+            width: 300px;
+            height: 300px;
+        }
+
+    .image-input__wrapper > ::deep input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        z-index: 1;
+        cursor: pointer;
+    }
+
+        .image-input__wrapper > ::deep input[type="file"]:disabled {
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
+        .image-input__wrapper > ::deep input[type="file"]::file-selector-button {
+            display: none;
+        }
+
+    .image-input__wrapper > ::deep input:focus + label {
+        outline: 2px auto var(--clr-input-outline);
+    }
+
+</style>
+
+<InputContainer Ref=@this TRef=@ImageInput TValue=@(IBrowserFile)>
+    <div class="image-input__wrapper">
+        <Microsoft.AspNetCore.Components.Forms.InputFile OnChange=@subHandleFileChange @attributes=@Attributes @ref=fobjFileInputRef id=@Id name=@Id disabled=@prpIsDisabled />
+        <label for=@Id class="image-input" data-state="default" @ref=@fobjFileLabelRef>
+            <div class="image-input__display-container">
+                @if (!System.String.IsNullOrEmpty(fstrImagePreviewBase64))
+                {
+                    <img src=@($"data:{mstrImageFormatType};base64,{fstrImagePreviewBase64}") style="width: 360px; height: 360px; object-fit: cover;" />
+                }
+                else if (!System.String.IsNullOrEmpty(DefaultValue))
+                {
+                    <img src=@DefaultValue style="width: 360px; height: 360px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div style="width: 4rem; height: 4rem;">
+                        <ImageIcon />
+                    </div>
+                    <p><span>Click To Upload</span> or Drag and Drop</p>
+                }
+            </div>
+        </label>
+    </div>
+</InputContainer>
+
+@code {
+    #region Params
+    /// <summary>
+    /// A string containing the default file path (i.e. if mguidAttachmentDetailId is a valid guid, provide $"File/{mguidAttachmentDetailId}")
+    /// </summary>
+    [Parameter] public System.String? DefaultValue { get; set; }
+    #endregion
+
+    #region Class Declarations
+    private Microsoft.AspNetCore.Components.Forms.InputFile? fobjFileInputRef = null;
+    private Microsoft.AspNetCore.Components.ElementReference? fobjFileLabelRef = null;
+    private System.String fstrImagePreviewBase64 = "";
+
+    private static System.String mstrImageFormatType = "image/jpeg";
+    #endregion
+
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            subRegisterFormField();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region OnAfterRenderAsync
+    protected async override System.Threading.Tasks.Task OnAfterRenderAsync(System.Boolean firstRender)
+    {
+        try
+        {
+            // IJSObjectReference objJSFileInputModule = await mobjJSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/Components/FileInput/index.js");
+
+            // await objJSFileInputModule.InvokeVoidAsync("initFileInput", fobjFileInputRef?.Element, fobjFileLabelRef);
+
+            if (firstRender)
+            {   
+                await mobjJSRuntime.InvokeVoidAsync("js", @"
+                    const fileInputRef = params[0];
+                    const fileLabelRef = params[1];
+
+                    fileInputRef.addEventListener('dragover', () => {
+                        // Perform logic to add class for appearance or something
+                        fileLabelRef.setAttribute('data-state', 'dragover');
+                    });
+
+                    fileInputRef.addEventListener('dragleave', () => {
+                        // Perform logic to remove class that was added in the 'dragover' event
+                        fileLabelRef.setAttribute('data-state', 'default');
+                    });
+                    fileInputRef.addEventListener('drop', (event) => {
+                        // Perform logic to remove class that was added in the 'dragover' event
+                        fileLabelRef.setAttribute('data-state', 'default');
+                    });
+                ", fobjFileInputRef?.Element, fobjFileLabelRef);
+            }
+
+            if (mobjCurrentValue == null && !System.String.IsNullOrEmpty(fstrImagePreviewBase64))
+            {
+                await mobjJSRuntime.InvokeVoidAsync("js", @"
+                    const fileInput = params[0];
+
+                    fileInput.value = '';
+                ", fobjFileInputRef?.Element);
+                fstrImagePreviewBase64 = "";
+            }
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && mobjCurrentValue == null && DefaultValue == null)
+        {
+            throw new System.Exception("Field is required");
+        }
+    }
+    #endregion
+
+    #region subHandleFileChange
+    private async void subHandleFileChange(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs pobjUploadEvent)
+    {
+        try
+        {
+            // Handle file upload and stream
+            IBrowserFile? objFile = pobjUploadEvent.GetMultipleFiles().FirstOrDefault();
+            if (objFile == null) return;
+
+            IBrowserFile? objImage = await objFile.RequestImageFileAsync(mstrImageFormatType, 648, 648);
+            if (objImage == null) throw new System.Exception("Invalid Image");
+
+            fstrImagePreviewBase64 = await fncDecodeImageToBase64(objImage);
+            mobjCurrentValue = objImage;
+
+            StateHasChanged();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region fncDecodeImageToBase64
+    private async Task<System.String> fncDecodeImageToBase64(IBrowserFile objImage)
+    {
+        System.String strImageBase64 = "";
+
+        try
+        {
+
+            if (objImage == null) return "";
+
+
+            IBrowserFile objResizedImage = await objImage.RequestImageFileAsync(mstrImageFormatType, 360, 360);
+            using (System.IO.MemoryStream objImageMemoryStream = new System.IO.MemoryStream())
+            {
+                System.IO.Stream objStream = objImage.OpenReadStream();
+
+                await objStream.CopyToAsync(objImageMemoryStream);
+                System.Byte[] abytImage = objImageMemoryStream.ToArray();
+                strImageBase64 = System.Convert.ToBase64String(abytImage);
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+
+        return strImageBase64;
+    }
+    #endregion
+
+    #region DisposeAsync
+    async System.Threading.Tasks.ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await mobjJSRuntime.InvokeVoidAsync("js", @"
+                const fileInputRef = params[0];
+                const fileLabelRef = params[1];
+
+                fileInputRef.removeEventListener('dragover', () => {
+                    // Perform logic to add class for appearance or something
+                    fileLabelRef.setAttribute('data-state', 'dragover');
+                });
+
+                fileInputRef.removeEventListener('dragleave', () => {
+                    // Perform logic to remove class that was added in the 'dragover' event
+                    fileLabelRef.setAttribute('data-state', 'default');
+                });
+                fileInputRef.removeEventListener('drop', (event) => {
+                    // Perform logic to remove class that was added in the 'dragover' event
+                    fileLabelRef.setAttribute('data-state', 'default');
+                });
+            ", fobjFileInputRef?.Element, fobjFileLabelRef);
+    }
+    #endregion
+}
