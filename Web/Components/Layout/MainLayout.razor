@@ -1,6 +1,19 @@
 ﻿@inherits LayoutComponentBase
 
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 2rem; width: 100%; max-width: 1200px; margin-inline: auto;">
+    <NavLink href="/">
+        <h1 style="font-family: monospace; font-size: 1.5rem; color: rebeccapurple;">BlazorUI</h1>    
+    </NavLink>
+    <nav style="display: flex; gap: 1rem; align-items: center;">
+        <NavLink href="/components">UI Components</NavLink>
+        <NavLink href="/rich-text-editor">Rich Text Editor</NavLink>
+        <NavLink href="/inputs">Other Inputs</NavLink>
+    </nav>
+</header>
+
+<main>
 @Body
+</main>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

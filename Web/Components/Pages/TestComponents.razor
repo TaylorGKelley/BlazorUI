@@ -1,6 +1,6 @@
 ﻿@page "/components"
 
-@rendermode Server
+@rendermode RenderMode.InteractiveServer
 
 @inherits ComponentMain
 
@@ -32,8 +32,6 @@
         </Content>
     </Popover>
     <Button @onclick=@subHandlePromptClick>Open Prompt</Button>
-
-    <BlazorUI.Components.Inputs.RichTextInput.RichTextInput Label="Test Input" />
 
     <Modal @ref=mobjModal ModalType=Modal.enumModalType.typLarge ScrollLock=true OnClose=@subHandleModalClose>
         <Title>

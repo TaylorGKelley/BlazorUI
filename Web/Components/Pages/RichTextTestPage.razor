@@ -1,15 +1,16 @@
-﻿@page "/rte"
+﻿@page "/rich-text-editor"
 
-@rendermode Server
+@rendermode RenderMode.InteractiveServer 
 
 @using BlazorUI.Components.Inputs.RichTextInput.Classes
 
-<section style="padding: 1.5rem 2rem; height: 80vh; display: flex; justify-content: center; align-items: center; gap: 3rem;">
+<section style="padding: 1.5rem 2rem; height: 80vh; display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap;">
     <div>
         <RichTextInput @bind-Value=@falobjRichTextValue Placeholder="Start typing here..." />
         <Button @onclick=@subGetContentString>Get the content</Button>
     </div>
     <div class="rich-text__output" style="width: 400px; min-height: 500px;">
+        <h2 style="color: #444">Preview:</h2>
         @RichTextInput.fncRenderContent(falobjRichTextValue)
     </div>
 </section>

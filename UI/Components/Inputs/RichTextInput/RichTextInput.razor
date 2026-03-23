@@ -2,6 +2,8 @@
 @inherits InputMain<System.Collections.Generic.List<Classes.cRichTextBlock>?>
 @implements IDisposable
 
+@rendermode RenderMode.InteractiveServer
+
 <style type="text/css">
     .rich-text-input * {
     font-family: Arial, sans-serif;
@@ -524,6 +526,8 @@
     {
         try
         {
+            await base.OnAfterRenderAsync(firstRender);
+
             if (mblnContentChanged) {
                 return;
             }
