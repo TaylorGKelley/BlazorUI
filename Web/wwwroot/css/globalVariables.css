@@ -1,0 +1,29 @@
+@property --clr-mono-100 {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #f8f9fa;
+}
+
+:root {
+    --clr-black: #000;
+    --clr-white: white;
+    --clr-mono-100: #ffffff;
+    --clr-mono-200: #eceef3;
+    --clr-mono-300: #aaa;
+    --clr-mono-400: #666;
+    --clr-mono-500: #555;
+    --clr-mono-600: #444;
+    --clr-mono-700: #333;
+    --clr-mono-800: #232323;
+    --clr-mono-900: #111;
+    --clr-mono-950: #0f0f0f;
+    --clr-primary-500: lightblue;
+
+    --transition-ease-out: cubic-bezier(0.76, 0.5, 0.51, 0.89);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --clr-primary-500: #555;
+    }
+}
