@@ -1,0 +1,158 @@
+﻿@page "/TestComponents"
+
+@inherits PageMain
+
+<PageTitle>Component Test Page</PageTitle>
+
+<section style="padding: 1.5rem 2rem; height: 80vh; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 2rem; overflow-y: auto;">
+    <SectionProgressBar Sections=@(new List<cSectionProgress> {
+                        new cSectionProgress { mstrTitle = "Start", mintProgressPercentage = 100 },
+                        new cSectionProgress { mstrTitle = "Middle", mintProgressPercentage = 100 },
+                        new cSectionProgress { mstrTitle = "Middle2", mintProgressPercentage = 57 },
+                        new cSectionProgress { mstrTitle = "End", mintProgressPercentage = 0 },
+        }) />
+
+    <Popover Anchor=@Popover.enumPopoverPosition.typTopCenter>
+        <AnchorElement>
+            <Button style="white-space: nowrap;" @onclick=@context.fncToggle>Open the popup</Button>
+        </AnchorElement>
+        <Content>
+            <div style="padding: 1rem;">
+                <h5>This is a popover</h5>
+                <menu>
+                    <ul style="list-style: none;">
+                        <li>
+                            Hi
+                        </li>
+                    </ul>
+                </menu>
+            </div>
+        </Content>
+    </Popover>
+    <Button @onclick=@subHandlePromptClick>Open Prompt</Button>
+
+    <BlazorUI.Components.Inputs.RichTextInput.RichTextInput Label="Test Input" />
+
+    <Modal @ref=mobjModal ModalType=Modal.enumModalType.typLarge ScrollLock=true OnClose=@subHandleModalClose>
+        <Title>
+            <span style="height: 100%; aspect-ratio: 1;">
+                <DashboardIcon />
+            </span>
+            <span>Do something</span>
+        </Title>
+        <ChildContent>
+            <div style="display: flex; align-items: center; justify-content: center; background-color: aliceblue; white-space: nowrap; text-overflow: ellipsis; overflow-x: hidden; padding: 1rem;">
+                A popup message! Should we do this action?
+            </div>
+        </ChildContent>
+    </Modal>
+    <p>@fstrMessage</p>
+
+    <Button @onclick=@(() => subToast(enumToastType.typInfo, "A test toast with an action", pobjToastAction: new cToastAction("Undo", () => fstrMessage = "The action was performed!")))>Toast</Button>
+    <Button @onclick=@(() => subToast(enumToastType.typSuccess, "A test toast message"))>Toast</Button>
+
+    @* <div> *@
+    @*     <div style="display: flex; justify-content: center; gap: 1rem;"> *@
+    @*         <Button @onclick=@subTestSetCookie>Set Cookie (testCookie)</Button> *@
+    @*         <Button @onclick=@subTestDeleteCookie>Delete Cookie (testCookie)</Button> *@
+    @*     </div> *@
+    @*     <p>Cookie (User Name: @(msruTestCookieValue.mstrUserName), Favorite Group ID: @(msruTestCookieValue.mintFavoriteGroupID))</p> *@
+    @* </div> *@
+</section>
+
+@code {
+    private Modal? mobjModal = null;
+    private System.String fstrMessage = "";
+
+    private System.DateTime fdteSelectedDate { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                msruTestCookieValue = await fncGetCookieAsync<structTestCookieValue>("testCookie");
+
+                StateHasChanged();
+            }
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+
+    private async void subHandlePromptClick() {
+        if (mobjModal == null) return;
+
+        Modal.enumCloseAction enmCloseAction = await mobjModal.fncShowModal();
+
+        if (enmCloseAction == Modal.enumCloseAction.typConfirm)
+        {
+            fstrMessage = "Continuing the execution of an action!";
+        }
+        else if (enmCloseAction == Modal.enumCloseAction.typCancel)
+        {
+            fstrMessage = "Cancelled action";
+        }
+    }
+
+    private void subHandleModalClose(Modal.enumCloseAction penmCloseAction)
+    {
+    //     if (penmCloseAction == Modal.enumCloseAction.typConfirm)
+    //     {
+    //         fstrMessage = "You confirmed the modal!";
+    //     }
+    //     else if (penmCloseAction == Modal.enumCloseAction.typCancel)
+    //     {
+    //         fstrMessage = "You cancelled the modal!";
+    //     }
+
+    //     StateHasChanged();
+    }
+
+    #region cookie test
+    struct structTestCookieValue
+    {
+        public System.String mstrUserName { get; set; }
+        public System.Int32 mintFavoriteGroupID { get; set; }
+    }
+    private structTestCookieValue msruTestCookieValue = new();
+
+    private async void subTestSetCookie()
+    {
+        try
+        {
+            structTestCookieValue sruTestCookieValue = new structTestCookieValue
+                {
+                    mstrUserName = subGetCurrentUser()?.Name ?? "",
+                    mintFavoriteGroupID = 20,
+                };
+
+            await subSetCookieAsync("testCookie", sruTestCookieValue);
+
+            msruTestCookieValue = await fncGetCookieAsync<structTestCookieValue>("testCookie");
+            StateHasChanged();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+
+    private async void subTestDeleteCookie()
+    {
+        try
+        {
+
+            await subDeleteCookieAsync("testCookie");
+            msruTestCookieValue = new structTestCookieValue();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+}

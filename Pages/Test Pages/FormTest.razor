@@ -1,0 +1,49 @@
+﻿@page "/formTest"
+
+@inherits PageMain
+
+<section style="display: flex; gap: 1rem; margin: 1.5rem; padding: 1rem 1.5rem; border-radius: 2rem; overflow: clip; background-color: white;">
+    <Form OnValidate=@subHandleValidation OnSubmit=@subHandleSubmit>
+        <TextInput Label="Test Name" Required @bind-Value=@fobjTestForm.mstrName />
+        <TextAreaInput Label="Test About" MaxLength="200" ErrorMessage=@fstrTextAboutErrorMessage @bind-Value=@fobjTestForm.mstrAbout />
+        <PhoneNumberInput Label="Test Phone Number" @bind-Value=@fobjTestForm.mintPhoneNumber />
+        <DateInput Label="Test Expiration Date" Optional @bind-Value=@fobjTestForm.mdteExpirationDate />
+        <SubmitButton>Save</SubmitButton>
+    </Form>
+</section>
+
+@code {
+    private Models.Forms.cTestForm fobjTestForm = new();
+
+    private System.String? fstrTextAboutErrorMessage = null; // String bound to ErrorMessage Parameter of the TextAreaInput, For use in custom validation
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // Run logic to load the existing data for the form model
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+
+    private System.Boolean subHandleValidation() {
+        fstrTextAboutErrorMessage = null;
+
+        if (fobjTestForm.mstrAbout != "Test!") {
+            // Recommended: Set an error message for the specified input element
+            fstrTextAboutErrorMessage = "Value must be 'Test!'";
+            return false; // Returning false will stop the submit function before OnSubmit is called
+        }
+
+
+        return true; // Returning true allows the submit to keep running and call OnSubmit
+    }
+
+    private async System.Threading.Tasks.Task subHandleSubmit() {
+        // Logic to handle a valid submit
+        await Task.Delay(5000); // Simulates some action that takes time
+    }
+}

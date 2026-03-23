@@ -1,0 +1,86 @@
+﻿@fncBuildWordString()
+
+@code {
+    [Parameter] public System.String DisplayText { get; set; } = System.String.Empty;
+    [Parameter] public System.String[] HighlightWords { get; set; } = System.Array.Empty<System.String>();
+
+    #region fncBuildWordString
+    private Microsoft.AspNetCore.Components.RenderFragment fncBuildWordString()
+    {
+        return objBuilder =>
+        {
+            System.Collections.Generic.List<cTextPart> alobjTextParts = fncGetTextParts();
+            System.Int32 intSequence = 0;
+            foreach (cTextPart objTextPart in alobjTextParts)
+            {
+                if (objTextPart.mblnIsHighlighted)
+                {
+                    objBuilder.OpenElement(intSequence++, "strong");
+                    objBuilder.AddContent(intSequence++, objTextPart.mstrText);
+                    objBuilder.CloseElement();
+                }
+                else
+                {
+                    objBuilder.AddContent(intSequence++, objTextPart.mstrText);
+                }
+            }
+        };
+    }
+    #endregion
+
+    #region fncGetTextParts
+    private System.Collections.Generic.List<cTextPart> fncGetTextParts()
+    {
+        System.Collections.Generic.List<cTextPart> alobjParts = new System.Collections.Generic.List<cTextPart>();
+        if (HighlightWords == null || HighlightWords.Length == 0 || string.IsNullOrEmpty(DisplayText))
+        {
+            alobjParts.Add(new cTextPart { mstrText = DisplayText, mblnIsHighlighted = false });
+            return alobjParts;
+        }
+        // Create regex pattern WITHOUT word boundaries for partial matching
+        System.Collections.Generic.IEnumerable<System.String> alstrEscapedWords = HighlightWords.Where(word => !System.String.IsNullOrEmpty(word))
+                               .Select(System.Text.RegularExpressions.Regex.Escape)
+                               .OrderByDescending(word => word.Length); // Longer matches first
+        System.String strPattern = $"({System.String.Join("|", alstrEscapedWords)})";
+        System.Text.RegularExpressions.MatchCollection aobjMatches = System.Text.RegularExpressions.Regex.Matches(DisplayText, strPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        System.Int32 intLastIndex = 0;
+        foreach (System.Text.RegularExpressions.Match objMatch in aobjMatches)
+        {
+            // Add text before the match (if any)
+            if (objMatch.Index > intLastIndex)
+            {
+                alobjParts.Add(new cTextPart
+                {
+                    mstrText = DisplayText.Substring(intLastIndex, objMatch.Index - intLastIndex),
+                    mblnIsHighlighted = false
+                });
+            }
+            // Add the highlighted match
+            alobjParts.Add(new cTextPart
+            {
+                mstrText = objMatch.Value,
+                mblnIsHighlighted = true
+            });
+            intLastIndex = objMatch.Index + objMatch.Length;
+        }
+        // Add remaining text (if any)
+        if (intLastIndex < DisplayText.Length)
+        {
+            alobjParts.Add(new cTextPart
+            {
+                mstrText = DisplayText.Substring(intLastIndex),
+                mblnIsHighlighted = false
+            });
+        }
+        return alobjParts;
+    }
+    #endregion
+
+    #region cTextPart
+    private class cTextPart
+    {
+        public System.String mstrText { get; set; } = System.String.Empty;
+        public System.Boolean mblnIsHighlighted { get; set; } = false;
+    }
+    #endregion
+}

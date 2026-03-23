@@ -1,0 +1,127 @@
+﻿@inherits ComponentMain
+
+<div class="scroll-container__wrapper @ClassName" @attributes=@Attributes>
+    <div style="max-height:@MaxHeight;" class="scroll-container" @ref="fobjScrollContainerRef">
+        @ChildContent
+    </div>
+    <span class="custom-scrollbar-y @(DraggableScrollbar ? "draggable" : "")" @ref="fobjScrollBarYRef"></span>
+    <span class="custom-scrollbar-x @(DraggableScrollbar ? "draggable" : "")" @ref="fobjScrollBarXRef"></span>
+</div>
+
+@code {
+    #region Class Declarations
+    private ElementReference fobjScrollContainerRef;
+    private ElementReference fobjScrollBarYRef;
+    private ElementReference fobjScrollBarXRef;
+    #endregion
+
+    #region Parameters
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public System.String MaxHeight { get; set; } = "500px";
+    [Parameter] public System.String ClassName { get; set; } = System.String.Empty;
+    [Parameter] public System.Boolean DraggableScrollbar { get; set; } = false;
+    [Parameter(CaptureUnmatchedValues = true)] public System.Collections.Generic.Dictionary<System.String, System.Object> Attributes { get; set; }
+    #endregion
+
+    #region OnAfterRenderAsync
+    protected override async Task OnAfterRenderAsync(System.Boolean firstRender)
+    {
+        // try
+        // {
+        //     if (firstRender)
+        //     {
+        //         // IJSObjectReference objScrollbarModule = await mobjJSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/Components/ScrollContainer/index.js");
+        //         // await objScrollbarModule.InvokeVoidAsync("initializeCustomScrollbar", fobjScrollContainerRef, fobjScrollBarYRef, fobjScrollBarXRef, DraggableScrollbar);
+        // 
+        //         await mobjJSRuntime.InvokeVoidAsync("js", @"
+        //             const scrollDiv = params [0];
+        //             const scrollBarY = params [1];
+        //             const scrollBarX = params [2];
+        //             const allowDrag = params [3] || false;
+        // 
+        //             const container = scrollDiv;
+        // 
+        //             const updateScrollbarY = () => {
+        //                 if (!container || !scrollBarY || !container?.scrollableHeight) return;
+        // 
+        //                 const contentHeight = container.scrollHeight;
+        //                 const containerHeight = container.clientHeight;
+        //                 // Calculate scrollbar height as a percentage of visible content
+        //                 const scrollbarHeight = Math.max((containerHeight / contentHeight) * 100, 10); // Minimum height
+        //                 scrollBarY.style.height = `calc(${scrollbarHeight}% - 12px)`;
+        //                 scrollBarY.style.visibility = contentHeight > containerHeight ? 'visible' : 'hidden';
+        //                 // Position scrollbar
+        //                 const scrollTop = container.scrollTop;
+        //                 const scrollPercentage = scrollTop / (contentHeight - containerHeight);
+        //                 const scrollbarTop = scrollPercentage * (containerHeight - (scrollbarHeight / 100) * containerHeight);
+        //                 scrollBarY.style.top = `${scrollbarTop}px`;
+        //             };
+        // 
+        //             // Attach scroll event
+        //             container?.addEventListener('scroll', updateScrollbarY);
+        // 
+        //             if (allowDrag) {
+        //                 // Handle scrollbar drag
+        //                 let isDragging = false;
+        //                 let startY;
+        //                 let startScrollTop;
+        //                 scrollBarY.addEventListener('mousedown', (e) => {
+        //                     isDragging = true;
+        //                     startY = e.clientY;
+        //                     startScrollTop = container?.scrollTop;
+        //                     document.body.classList.add('no-select'); // Prevent text selection during drag
+        //                 });
+        // 
+        //                 document.addEventListener('mousemove', (e) => {
+        //                     if (!isDragging && container) return;
+        //                     const deltaY = e.clientY - startY;
+        //                     const contentHeight = container.scrollHeight;
+        //                     const containerHeight = container.clientHeight;
+        //                     const scrollableHeight = contentHeight - containerHeight;
+        //                     // Adjust the scroll amount proportionally
+        //                     const scrollbarHeight = (containerHeight / contentHeight) * containerHeight;
+        //                     const scrollAmount = (deltaY / (containerHeight - scrollbarHeight)) * scrollableHeight;
+        //                     container.scrollTop = startScrollTop + scrollAmount;
+        //                 });
+        // 
+        //                 document.addEventListener('mouseup', () => {
+        //                     isDragging = false;
+        //                     document.body.classList.remove('no-select');
+        //                 });
+        //             }
+        // 
+        //             // Initial calculation
+        //             updateScrollbarY();
+        // 
+        //             // Store the initial scrollHeight
+        //             let lastScrollHeight = container.scrollHeight;
+        //             // Function to handle scrollHeight changes
+        //             const onScrollHeightChange = (newScrollHeight) => {
+        //                 const contentHeight = container.scrollHeight;
+        //                 const containerHeight = container.clientHeight;
+        //                 // Calculate scrollbar height as a percentage of visible content
+        //                 const scrollbarHeight = Math.max((containerHeight / contentHeight) * 100, 10); // Minimum height
+        //                 scrollBarY.style.height = `calc(${scrollbarHeight}% - 12px)`;
+        //                 scrollBarY.style.visibility = contentHeight > containerHeight ? 'visible' : 'hidden';
+        //             };
+        // 
+        //             // Create a ResizeObserver
+        //             const resizeObserver = new ResizeObserver(() => {
+        //                 const currentScrollHeight = container.scrollHeight;
+        //                 if (currentScrollHeight !== lastScrollHeight) {
+        //                     onScrollHeightChange(currentScrollHeight);
+        //                     lastScrollHeight = currentScrollHeight; // Update the stored value
+        //                 }
+        //             });
+        // 
+        //             resizeObserver.observe(container);
+        //         ", fobjScrollContainerRef, fobjScrollBarYRef, fobjScrollBarXRef, DraggableScrollbar);
+        //     }
+        // }
+        // catch (System.Exception ex)
+        // {
+        //     subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        // }
+    }
+    #endregion
+}

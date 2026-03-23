@@ -1,0 +1,55 @@
+﻿@inherits InputMain<System.String>
+
+<InputContainer Ref=@this TRef=@TextInput TValue=@System.String>
+    <div class="input-wrapper">
+        <span class="helper-icon @(!System.String.IsNullOrEmpty(WarningMessage) ? "warning" : "")">
+            @if (!System.String.IsNullOrEmpty(prpErrorMessage)) {
+                <ErrorIcon />
+            } else if (!System.String.IsNullOrEmpty(WarningMessage)) {
+                <InfoIcon />
+            }
+        </span>
+        <input @attributes=@Attributes name=@Id id="@Id" class="text-input" type="text" maxlength=@MaxLength disabled=@prpIsDisabled @bind=@mobjCurrentValue required=@Required placeholder=@Placeholder />
+    </div>
+</InputContainer>
+
+@code {
+    #region Params
+    [Parameter] public System.Int32 MaxLength { get; set; } = System.Int32.MaxValue;
+    /// <summary>
+    /// Regular expression to validate the input too
+    /// </summary>
+    [Parameter] public System.String Pattern { get; set; } = System.String.Empty;
+    #endregion
+
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            subRegisterFormField();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && System.String.IsNullOrEmpty(mobjCurrentValue?.ToString()))
+        {
+            throw new System.Exception("Field is required");
+        }
+        else if (mobjCurrentValue?.Length > MaxLength)
+        {
+            throw new System.Exception($"Must be less than {MaxLength} characters");
+        }
+        else if (!System.String.IsNullOrWhiteSpace(Pattern) && !System.Text.RegularExpressions.Regex.IsMatch(mobjCurrentValue ?? "", Pattern)) {
+            throw new System.Exception($"Invalid value");
+        }
+    }
+    #endregion
+}

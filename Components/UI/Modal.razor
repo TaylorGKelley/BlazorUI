@@ -1,0 +1,191 @@
+﻿@inherits ComponentMain
+
+<dialog id=@mstrId class="modal @(fblnIsVisible ? "visible" : "")" @ref=mobjDialog scroll-lock=@(ScrollLock? fblnIsVisible : false) modal-type=@(Title != null ? ModalType : enumModalType.typSmall)>
+    @if (ModalType == enumModalType.typLarge && Title != null)
+    {
+        <header>
+            <div class="modal-title">
+                @Title
+            </div>
+            <button type="button" class="shadow-sm" @onclick=@(() => fncHideModal(enumCloseAction.typDisolve))>
+                <XIcon />
+            </button>
+        </header>
+    }
+    <ScrollContainer MaxHeight="100%">
+        <article>
+            @ChildContent(this)
+        </article>
+    </ScrollContainer>
+    @if (!HideFooter)
+    {
+        <footer>
+            <menu>
+                <Button type="button" autofocus @onclick=@(() => fncHideModal(enumCloseAction.typCancel))>Cancel</Button>
+                <Button type="button" @onclick=@(() => fncHideModal(enumCloseAction.typConfirm))>Confirm</Button>
+            </menu>
+        </footer>
+    }
+</dialog>
+
+@* <script>
+    window.modalShow = (modalEl, DotNet) => {
+        modalEl?.showModal();
+        if (!keepOpenOnBackdropClick)
+            modalEl.addEventListener('mousedown', (event) => {
+                const rect = modalEl.getBoundingClientRect();
+                const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                    rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+                if (!isInDialog && event.target.tagName === 'DIALOG') {
+                    event.stopPropagation()
+                    DotNet.invokeMethodAsync("fncHideModal", 10);
+                }
+            });
+    };
+
+    window.modalHide = (modalEl, DotNet) => {
+        setTimeout(() => modalEl.close(), 200);
+        if (!keepOpenOnBackdropClick)
+            modalEl.removeEventListener('mousedown', (event) => {
+                const rect = modalEl.getBoundingClientRect();
+                const isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                    rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+                if (!isInDialog && event.target.tagName === 'DIALOG') {
+                    event.stopPropagation()
+                    DotNet.invokeMethodAsync("fncHideModal", 10);
+                }
+            });
+    };
+</script> *@
+
+@code {
+    #region Enums
+    public enum enumCloseAction
+    {
+        // Cancel button clicked
+        typCancel = 0,
+        // X, escape, or backdrop was clicked
+        typDisolve = 10,
+        // Prompt was confirmed
+        typConfirm = 20,
+    }
+
+    public enum enumModalType
+    {
+        // Includes the header
+        typLarge = 0,
+        // Does not include the header / smaller modal popup
+        typSmall = 10,
+    }
+    #endregion
+
+    #region Params
+    [Parameter] public RenderFragment? Title { get; set; } = null;
+    [Parameter, EditorRequired] public RenderFragment<Modal> ChildContent { get; set; }
+    [Parameter] public System.Boolean ScrollLock { get; set; } = false;
+    [Parameter] public enumModalType ModalType { get; set; } = enumModalType.typLarge;
+    [Parameter] public System.Boolean KeepOpenOnBackdropClick { get; set; } = false;
+    [Parameter] public System.Boolean HideFooter { get; set; } = false;
+    [Parameter] public EventCallback<enumCloseAction> OnClose { get; set; }
+    #endregion
+
+    #region Class Declarations
+    private ElementReference mobjDialog { get; set; }
+    private System.String mstrId = $"dialog-{subGenerateRandomHex()}";
+
+    private System.Threading.Tasks.TaskCompletionSource<enumCloseAction>? mobjOnCloseReturn = null;
+    private IJSObjectReference? mobjJSModalFunctions = null;
+    public System.Boolean fblnIsVisible = false;
+    #endregion
+
+    #region OnAfterRenderAsync
+    protected override async System.Threading.Tasks.Task OnAfterRenderAsync(System.Boolean firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            fncKeyBind("escape", BaseComponents.ComponentMain.IKeyBinder.enmExtraKey.typNone, "CloseModal");
+
+            // IJSObjectReference mobjImportedJSModule = await mobjJSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/Components/Modal/index.js");
+            // mobjJSModalFunctions = await mobjImportedJSModule.InvokeAsync<IJSObjectReference>("initModal", DotNetObjectReference.Create(this), KeepOpenOnBackdropClick);
+            mobjJSModalFunctions = await mobjJSRuntime.InvokeAsync<IJSObjectReference>("js", @"
+                const DotNet = params[0];
+                const keepOpenOnBackdropClick = params[1];
+
+                const checkIfBackdropClicked = (modalEl) => {
+                    return (event) => {
+                        var rect = modalEl.getBoundingClientRect();
+                        var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height &&
+                            rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+                        if (!isInDialog && event.target.tagName === 'DIALOG') {
+                            event.stopPropagation()
+                            DotNet.invokeMethodAsync('fncHideModal', 10);
+                        }
+                    }
+                }
+
+                return {
+                    showModal: (modalEl) => {
+                        modalEl?.showModal();
+                        if (!keepOpenOnBackdropClick)
+                            modalEl.addEventListener('mousedown', checkIfBackdropClicked(modalEl));
+                    },
+                    hideModal: (modalEl) => {
+                        setTimeout(() => modalEl.close(), 200);
+                        if (!keepOpenOnBackdropClick)
+                            modalEl.removeEventListener('mousedown', checkIfBackdropClicked(modalEl))
+                    },
+                }", 
+                DotNetObjectReference.Create(this), KeepOpenOnBackdropClick);
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region fncShowModal
+    public async System.Threading.Tasks.Task<enumCloseAction> fncShowModal()
+    {
+        mobjOnCloseReturn = new System.Threading.Tasks.TaskCompletionSource<enumCloseAction>();
+
+        fblnIsVisible = true;
+        StateHasChanged();
+        mobjJSModalFunctions?.InvokeVoidAsync("showModal", mobjDialog);
+
+        return await mobjOnCloseReturn.Task;
+    }
+    #endregion
+
+    #region fncHideModal
+    [JSInvokable("fncHideModal")]
+    public void fncHideModal(enumCloseAction penmCloseAction)
+    {
+        fblnIsVisible = false;
+        StateHasChanged();
+        mobjJSModalFunctions?.InvokeVoidAsync("hideModal", mobjDialog);
+
+        if (mobjOnCloseReturn != null)
+        {
+            mobjOnCloseReturn.SetResult(penmCloseAction);
+            mobjOnCloseReturn = null;
+        }
+
+        OnClose.InvokeAsync(penmCloseAction);
+    }
+    #endregion
+
+    #region subKeyPressed
+    public override void subKeyPressed(System.String pstrKeyBindIdentifier)
+    {
+        switch (pstrKeyBindIdentifier)
+        {
+            case "CloseModal":
+                fncHideModal(enumCloseAction.typDisolve);
+                break;
+        }
+    }
+    #endregion
+    }

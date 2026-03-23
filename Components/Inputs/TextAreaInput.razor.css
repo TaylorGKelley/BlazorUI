@@ -1,0 +1,9 @@
+﻿@property --min-height {
+    syntax: "<length> | <percentage>";
+    initial-value: "100px";
+}
+
+@property --max-height {
+    syntax: "<length> | <percentage>";
+    initial-value: "500px";
+}

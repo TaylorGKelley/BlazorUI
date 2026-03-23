@@ -1,0 +1,165 @@
+﻿@typeparam TValue where TValue : struct, IConvertible
+
+@inherits ComponentMain
+
+<style>
+    .progress-wrapper {
+        --clr-progress-default: blue;
+        --clr-progress-success: green;
+        --clr-progress-error: red;
+        position: relative;
+        width: 100%;
+        font-size: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .progress-label {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+        align-content: center;
+    }
+
+        .progress-label > label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    .progress-spinner-wrapper {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .progress-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        color: #777;
+    }
+
+    progress[value] {
+        /* Reset the default appearance */
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 10px;
+        border-radius: 9999px;
+        overflow: clip;
+    }
+
+        progress[value]::-webkit-progress-bar {
+            background-color: #eee;
+        }
+
+        progress[value]::-webkit-progress-value {
+            background-color: blue;
+            border-radius: 9999px;
+        }
+
+        progress[value]:not(.success):not(.error)::-webkit-progress-value {
+            /* Default / In Progress */
+            background-color: var(--clr-progress-default);
+        }
+
+        progress[value]:not(.error).success::-webkit-progress-value {
+            /* Success */
+            background-color: var(--clr-progress-success);
+        }
+
+        progress[value].error::-webkit-progress-value {
+            /* Error */
+            background-color: var(--clr-progress-error) !important;
+        }
+
+    .message-wrapper {
+        display: flex;
+        align-items: center;
+        height: 1rem;
+        color: #555;
+    }
+
+        .message-wrapper.error {
+            color: var(--clr-progress-error);
+        }
+
+</style>
+
+<div class="progress-wrapper">
+    <div class="progress-label">
+        <label for=@mstrUniqueId>
+            @switch (Status)
+            {
+                case enumStatus.typInProgress:
+                    @DefaultText(new structCurrentValueContext { mintValue = Value, mintMaxValue = MaxValue })
+                    break;
+                case enumStatus.typSuccess:
+                    @SuccessText(new structCurrentValueContext { mintValue = Value, mintMaxValue = MaxValue })
+                    break;
+                case enumStatus.typError:
+                    @FailedText(new structCurrentValueContext { mintValue = Value, mintMaxValue = MaxValue })
+                    break;
+            }
+        </label>
+        <div class="progress-spinner-wrapper">
+            <span>
+                50%
+            </span>
+            <span style="opacity: 0.8;" class="progress-spinner">
+                @switch (Status)
+                {
+                    case enumStatus.typInProgress:
+                        <LoadingSpinner />
+                        break;
+                    case enumStatus.typSuccess:
+                        break;
+                    case enumStatus.typError:
+                        <ErrorIcon />
+                        break;
+                }
+            </span>
+        </div>
+    </div>
+    <progress id=@mstrUniqueId value=@Value max=@MaxValue class="shadow-sm @(Status == enumStatus.typSuccess ? "success" : "") @(Status == enumStatus.typError ? "error" : "")"></progress>
+    <div class="message-wrapper @(Status == enumStatus.typError ? "error" : "")">
+        <p>
+            @if (!System.String.IsNullOrEmpty(ErrorMessage) && Status == enumStatus.typError)
+            {
+                @ErrorMessage
+            }
+            else if (MessageContent != null)
+            {
+                @MessageContent(new structCurrentValueContext { mintValue = Value, mintMaxValue = MaxValue })
+            }
+        </p>
+    </div>
+</div>
+
+@code {
+    public enum enumStatus
+    {
+        typInProgress = 0,
+        typSuccess = 10,
+        typError = 20
+    }
+
+    public struct structCurrentValueContext
+    {
+        public TValue mintValue { get; set; }
+        public TValue mintMaxValue { get; set; }
+    }
+
+    [Parameter] public TValue Value { get; set; }
+    [Parameter, EditorRequired] public TValue MaxValue { get; set; }
+    [Parameter, EditorRequired] public enumStatus Status { get; set; }
+    [Parameter, EditorRequired] public RenderFragment<structCurrentValueContext> DefaultText { get; set; }
+    [Parameter, EditorRequired] public RenderFragment<structCurrentValueContext> SuccessText { get; set; }
+    [Parameter, EditorRequired] public RenderFragment<structCurrentValueContext> FailedText { get; set; }
+    [Parameter] public RenderFragment<structCurrentValueContext>? MessageContent { get; set; } = null;
+    [Parameter] public System.String ErrorMessage { get; set; } = System.String.Empty;
+
+    private static readonly System.String mstrUniqueId = subGenerateRandomHex();
+}

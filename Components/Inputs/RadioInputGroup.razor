@@ -1,0 +1,24 @@
+﻿@typeparam TValue
+@attribute [CascadingTypeParameter(nameof(TValue))]
+@inherits InputMain<TValue>
+
+<InputContainer Ref=@this TRef=@(RadioInputGroup<TValue>) TValue=@TValue>
+    @ChildContent
+</InputContainer>
+
+@code {
+    #region Params
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && System.String.IsNullOrEmpty(mobjCurrentValue?.ToString()))
+        {
+            throw new System.Exception("Field is required");
+        }
+        return;
+    }
+    #endregion
+}

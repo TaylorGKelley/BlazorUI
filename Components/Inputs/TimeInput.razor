@@ -1,0 +1,133 @@
+﻿@inherits InputMain<System.DateTime?>
+
+    <style>
+    input[type="time"]:invalid {
+        box-shadow: none !important;
+    }
+
+    input[type="time"].error {
+        box-shadow: 0 0 10px var(--clr-error);
+    }
+
+    .time-input__wrapper > button {
+        height: 100%;
+        aspect-ratio: 1;
+        background-color: transparent;
+        border: 1px solid #ccc;
+        border-left: 0;
+        border-radius: 0 1rem 1rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding-right: 0.5rem;
+    }
+
+        .time-input__wrapper > button > ::deep svg {
+            height: 1.25rem;
+        }
+
+        .time-input__wrapper > button:disabled {
+            cursor: default;
+        }
+
+    .selected-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .calendar-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    ::deep .monthly-calendar {
+        box-shadow: initial !important;
+    }
+
+    .calendar-popover__button-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        background-color: white;
+        padding-inline: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom-left-radius: 1rem;
+        border-bottom-right-radius: 1rem;
+    }
+
+    .calendar-popover__button {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        border: 1.5px solid black;
+        background: none;
+        cursor: pointer;
+    }
+    </style>
+
+<InputContainer Ref=@this TRef=@TimeInput TValue=@(System.DateTime?)>
+        <div class="input-wrapper">
+            <span class="helper-icon @(!System.String.IsNullOrEmpty(WarningMessage) ? "warning" : "")">
+                @if (!System.String.IsNullOrEmpty(prpErrorMessage))
+                {
+                    <ErrorIcon />
+                }
+                else if (!System.String.IsNullOrEmpty(WarningMessage))
+                {
+                    <InfoIcon />
+                }
+            </span>
+            <input type="time" @attributes=@Attributes id=@Id name=@Id min=@System.TimeOnly.MinValue max=@System.TimeOnly.MaxValue placeholder=@Placeholder required=@Required disabled=@prpIsDisabled class=@($"date-input {(!System.String.IsNullOrEmpty(ErrorMessage) ? "error" : "")}") @bind=mdteCurrentValue @bind:event="onchange" />
+        </div>
+</InputContainer>
+
+@code {
+    #region Props
+    public System.DateTime? mdteCurrentValue
+    {
+        get
+        {
+            return mobjCurrentValue <= new System.DateTime(1900, 1, 1) ? null : mobjCurrentValue;
+        }
+        set
+        {
+            if (mobjCurrentValue <= new System.DateTime(1900, 1, 1)) mobjCurrentValue = System.DateTime.Now; 
+
+            mobjCurrentValue = new System.DateTime(mobjCurrentValue?.Year ?? 1, mobjCurrentValue?.Month ?? 1, mobjCurrentValue?.Day ?? 1,
+                                                   value?.Hour ?? 0, value?.Minute ?? 0, value?.Second ?? 0);
+        }
+    }
+    #endregion
+
+    #region OnInitialized
+    protected override void OnInitialized()
+    {
+        try
+        {
+            subRegisterFormField();
+        }
+        catch (System.Exception ex)
+        {
+            subSetLastError(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.Message);
+        }
+    }
+    #endregion
+
+    #region subRunValidation
+    protected override void subRunValidation()
+    {
+        if (Required && System.String.IsNullOrEmpty(mobjCurrentValue.ToString()))
+        {
+            throw new System.Exception("Field is required");
+        }
+        else if (mobjCurrentValue != null && (System.TimeOnly.FromDateTime((System.DateTime)mobjCurrentValue) > System.TimeOnly.MaxValue || System.TimeOnly.FromDateTime((System.DateTime)mobjCurrentValue) < System.TimeOnly.MinValue))
+        {
+            throw new System.Exception($"Invalid Time");
+        }
+    }
+    #endregion
+}
+
