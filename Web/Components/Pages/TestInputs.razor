@@ -10,22 +10,6 @@
     <div style="display: flex; align-items: center; flex-direction: column; gap: 2rem;">
         <FileInput Label="Test File upload" @bind-Value=@falobjFileUploads />
 
-        @foreach (cFileUpload objFile in falobjFileUploads)
-        {
-            <ProgressBar Value=@((System.Int64)(objFile.mintSize / 2.5)) MaxValue=@(objFile.mintSize) Status=@(ProgressBar<System.Int64>.enumStatus.typInProgress)>
-                <DefaultText>@objFile.mstrName (@BlazorUI.Utils.Helpers.ValueDisplayConverter.FormatBytes(context.mintValue))</DefaultText>
-                <SuccessText>@objFile.mstrName (@BlazorUI.Utils.Helpers.ValueDisplayConverter.FormatBytes(context.mintValue))</SuccessText>
-                <FailedText>Upload Failed</FailedText>
-                <MessageContent>@BlazorUI.Utils.Helpers.ValueDisplayConverter.FormatBytes(context.mintValue) of @BlazorUI.Utils.Helpers.ValueDisplayConverter.FormatBytes(context.mintMaxValue)</MessageContent>
-            </ProgressBar>
-        }
-
-        <RadioInputGroup @bind-Value=@fstrRadioInput>
-            <RadioInputOption Value=@("Option 1")>This is an option</RadioInputOption>
-            <RadioInputOption Value=@("Option 2")>This is another option</RadioInputOption>
-            <RadioInputOption Value=@("Option 3")>This is a third option</RadioInputOption>
-        </RadioInputGroup>
-
         <DateInput Label="Date" Required @bind-Value=@fdteDateTimeInput />
 
         <TimeInput Label="Time" Disabled=@(fdteDateTimeInput == null) Required @bind-Value=@fdteDateTimeInput />
