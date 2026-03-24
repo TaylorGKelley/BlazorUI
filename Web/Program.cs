@@ -11,6 +11,7 @@ namespace Web
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddControllers();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
@@ -34,6 +35,8 @@ namespace Web
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
+
+            app.MapControllers();
 
             app.Run();
         }

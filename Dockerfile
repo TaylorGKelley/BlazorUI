@@ -20,8 +20,9 @@ RUN dotnet publish -c Release -o /app/publish
 # Use the ASP.NET runtime image for running the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://+:5153
+EXPOSE 5153
+
 COPY --from=build /app/publish .
-
-EXPOSE 8080
-
 ENTRYPOINT ["dotnet", "Web.dll"]

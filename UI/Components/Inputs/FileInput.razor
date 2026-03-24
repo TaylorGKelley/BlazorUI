@@ -180,16 +180,16 @@
                 const fileInputRef = params[0];
                 const fileLabelRef = params[1];
 
-                fileInputRef.removeEventListener('dragover', () => {
+                fileInputRef?.removeEventListener('dragover', () => {
                     // Perform logic to add class for appearance or something
                     fileLabelRef.setAttribute('data-state', 'dragover');
                 });
 
-                fileInputRef.removeEventListener('dragleave', () => {
+                fileInputRef?.removeEventListener('dragleave', () => {
                     // Perform logic to remove class that was added in the 'dragover' event
                     fileLabelRef.setAttribute('data-state', 'default');
                 });
-                fileInputRef.removeEventListener('drop', (event) => {
+                fileInputRef?.removeEventListener('drop', (event) => {
                     // Perform logic to remove class that was added in the 'dragover' event
                     fileLabelRef.setAttribute('data-state', 'default');
                 });
