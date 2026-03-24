@@ -4,39 +4,21 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 # Set the working directory inside the container
 WORKDIR /src
 
-# Copy the project file to the container
-COPY ["UI/BlazorUI.csproj", "./UI"]
-COPY ["Web/Web.csproj", "./Web"]
+# copy the project files (use the exact filenames in your repo)
+COPY ["BlazorUI.sln", "./"]
+COPY ["UI/BlazorUI.csproj", "UI/"]
+COPY ["Web/Web.csproj", "Web/"]
 
 # Restore the project dependencies
-RUN dotnet restore "Web/Web.csproj"
+RUN dotnet restore "BlazorUI.sln"
 
-# Copy the rest of the application files to the container
+# copy the rest and build...
 COPY . .
-
-# Build the application in Release mode and output to /app/build
-RUN dotnet build "Web/Web.csproj" -c Release -o /app/build
-
-# Use the build stage to publish the application
-FROM build AS publish
-
-# Publish the application in Release mode to /app/publish
-RUN dotnet publish "Web/Web.csproj" -c Release -o /app/publish
+WORKDIR /src/Web
+RUN dotnet publish -c Release -o /app/publish
 
 # Use the ASP.NET runtime image for running the application
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy AS final
-
-# Set the working directory inside the container
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-
-# Copy the published application from the publish stage
-COPY --from=publish /app/publish .
-
-# Set the environment variable to configure the application to listen on port 80
-ENV ASPNETCORE_URLS=http://+:80
-
-# Expose port 80 for the application
-EXPOSE 80
-
-# Define the entry point for the container to run the application
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Web.dll"]
