@@ -1,5 +1,6 @@
 using BlazorUI.Services;
 using BlazorUI.Services.Toast;
+using Microsoft.AspNetCore.Builder;
 using Web.Components;
 
 namespace Web
@@ -11,7 +12,6 @@ namespace Web
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
@@ -28,6 +28,7 @@ namespace Web
                 app.UseHsts();
             }
 
+            app.MapHealthChecks("/health");
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
@@ -36,7 +37,6 @@ namespace Web
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
-            app.MapControllers();
 
             app.Run();
         }
