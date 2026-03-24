@@ -1,9 +1,0 @@
-﻿<div class="section-progress-bar">
-    @foreach(Classes.cSectionProgress objSection in Sections) {
-        <BlazorUI.Components.UI.SectionProgressBar.Internal.Section SectionData=@objSection IsFirst=@(Sections.FirstOrDefault() == objSection) />
-    }
-</div>
-
-@code {
-    [Parameter] public System.Collections.Generic.List<Classes.cSectionProgress> Sections { get; set; }
-}

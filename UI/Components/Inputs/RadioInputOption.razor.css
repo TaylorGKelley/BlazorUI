@@ -1,9 +1,0 @@
-﻿input[type="radio"] {
-    visibility: hidden;
-    position: absolute;
-    width: 0 !important;
-}
-
-label[checked] > .checked-icon {
-    background-color: blue;
-}

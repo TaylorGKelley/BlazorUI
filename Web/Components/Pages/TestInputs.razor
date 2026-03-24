@@ -24,7 +24,7 @@
 
         <NumberInput Label="Number" Placeholder="Amount..." Required @bind-Value=@fintNumberInput />
 
-        <SelectInput Label="Multi Option Select" MultiSelect SelectAllOption Searchable @bind-Value=falstrMultiSelectedOptions>
+        <SelectInput Label="Multi Option Select" MultiSelect SelectAllOption Searchable @bind-Value=falstrMultiSelectedOptions TValue=@(System.String)>
             <Option Value=@("Option 1")>Option 1</Option>
             <Option Value=@("Option 2")>Option 2</Option>
             <Option Value=@("Option 3")>Option 3</Option>
@@ -35,7 +35,7 @@
             <Option Value=@("Option 8")>Option 8</Option>
         </SelectInput>
 
-        <SelectInput Label="Single Option Select" PreventDeselect Required @bind-Value=falstrSingleSelectedOptions>
+        <SelectInput Label="Single Option Select" PreventDeselect Required @bind-Value=falstrSingleSelectedOptions TValue=@(System.String)>
             <Option Value=@("Option 1")>Option 1</Option>
             <Option Value=@("Option 2")>Option 2</Option>
             <Option Value=@("Option 3")>Option 3</Option>
@@ -47,48 +47,7 @@
         </SelectInput>
 
         <CheckboxInput Label="Checkbox Input" @bind-Value=fblnCheckboxInput />
-
-
-        @* <p>@fstrTextInput</p> *@
-        @* <p style="white-space: pre-wrap;">@fstrTextAreaInput</p> *@
-        @* <p>@fintNumberInput</p> *@
-        @* <p>Selections: @(System.String.Join(", ", falstrMultiSelectedOptions))</p> *@
-        @* <p>Selections: @(System.String.Join(", ", falstrSingleSelectedOptions))</p> *@
     </div>
-    @* <div style="display: flex; align-items: center; flex-direction: column; gap: 2rem;"> *@
-    @*     <div style="display: flex; flex-direction: column;"> *@
-    @*         <label>Text</label> *@
-    @*         <input type="text" /> *@
-    @*     </div> *@
-    @*     <div style="display: flex; flex-direction: column;"> *@
-    @*         <label>Text Area</label> *@
-    @*         <textarea /> *@
-    @*     </div> *@
-    @*     <div style="display: flex; flex-direction: column;"> *@
-    @*         <label>Number</label> *@
-    @*         <input type="number" /> *@
-    @*     </div> *@
-    @*     <div style="display: flex; flex-direction: column;"> *@
-    @*         <label>Multi Select (Not possible)</label> *@
-    @*         <select disabled> *@
-    @*             <option>Select an option</option> *@
-    @*         </select> *@
-    @*     </div> *@
-    @*     <div style="display: flex; flex-direction: column;"> *@
-    @*         <label>Single Select</label> *@
-    @*         <select> *@
-    @*             <option disabled selected>Select an option</option> *@
-    @*             <option value="option 1">Option 1</option> *@
-    @*             <option value="Option 2">Option 2</option> *@
-    @*             <option value="Option 3">Option 3</option> *@
-    @*             <option value="Option 4">Option 4</option> *@
-    @*             <option value="Option 5">Option 5</option> *@
-    @*             <option value="Option 6">Option 6</option> *@
-    @*             <option value="Option 7">Option 7</option> *@
-    @*             <option value="Option 8">Option 8</option> *@
-    @*         </select> *@
-    @*     </div> *@
-    @* </div> *@
 </section>
 
 @code {
