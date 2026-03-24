@@ -1,6 +1,7 @@
 # Use the .NET SDK image for building the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
+
 # Set the working directory inside the container
 WORKDIR /src
 
@@ -20,6 +21,9 @@ RUN dotnet publish -c Release -o /app/publish
 # Use the ASP.NET runtime image for running the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl wget && rm -rf /var/lib/apt/lists/*
 
 ENV ASPNETCORE_URLS=http://+:5153
 EXPOSE 5153
