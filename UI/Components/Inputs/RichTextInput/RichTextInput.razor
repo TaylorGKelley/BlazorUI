@@ -63,7 +63,8 @@
     border-radius: 1rem;
     overflow: hidden;
     position: relative;
-    width: 500px;
+    max-width: 500px;
+    width: 100%
     }
 
     .rich-text-input[disabled] * {
@@ -77,6 +78,7 @@
 
     .editor-control-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;

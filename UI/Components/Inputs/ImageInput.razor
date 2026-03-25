@@ -35,7 +35,7 @@
             height: 300px;
         }
 
-    .image-input__wrapper > ::deep input[type="file"] {
+    .image-input__wrapper > input[type="file"] {
         position: absolute;
         inset: 0;
         opacity: 0;
@@ -46,16 +46,16 @@
         cursor: pointer;
     }
 
-        .image-input__wrapper > ::deep input[type="file"]:disabled {
+        .image-input__wrapper > input[type="file"]:disabled {
             pointer-events: none;
             cursor: not-allowed;
         }
 
-        .image-input__wrapper > ::deep input[type="file"]::file-selector-button {
+        .image-input__wrapper > input[type="file"]::file-selector-button {
             display: none;
         }
 
-    .image-input__wrapper > ::deep input:focus + label {
+    .image-input__wrapper > input:focus + label {
         outline: 2px auto var(--clr-input-outline);
     }
 
