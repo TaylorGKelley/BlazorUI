@@ -24,7 +24,7 @@
 
         <NumberInput Label="Number" Placeholder="Amount..." Required @bind-Value=@fintNumberInput />
 
-        <SelectInput Label="Multi Option Select" MultiSelect SelectAllOption Searchable @bind-Value=falstrMultiSelectedOptions TValue=@(System.String)>
+        @* <SelectInput Label="Multi Option Select" MultiSelect SelectAllOption Searchable @bind-Value=falstrMultiSelectedOptions TValue=@(System.String)>
             <Option Value=@("Option 1")>Option 1</Option>
             <Option Value=@("Option 2")>Option 2</Option>
             <Option Value=@("Option 3")>Option 3</Option>
@@ -44,7 +44,7 @@
             <Option Value=@("Option 6")>Option 6</Option>
             <Option Value=@("Option 7")>Option 7</Option>
             <Option Value=@("Option 8")>Option 8</Option>
-        </SelectInput>
+        </SelectInput> *@
 
         <CheckboxInput Label="Checkbox Input" @bind-Value=fblnCheckboxInput />
     </div>
